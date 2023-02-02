@@ -41,13 +41,33 @@ class MagaluAffiliateBot:
 		self.cuttly_apikey = os.environ["CURTLY_APIKEY"]
 		self.email = os.environ['MAGALU_ACCOUNT_EMAIL']
 		self.magalu_affiliate_group_id = os.environ['MAGALU_WHATSAPP_GROUP_ID']
+		self.TOP_PHRASES = [
+			"📢 DESCONTÃO ROLANDO 🚨",
+			"📢 PROMO IMPERDÍVEL 🚨",
+			"📢 MUUUITO BARATO 😱",
+			"📢 VALENDO MUUUITO A PENA 😱",
+			"📢 DESCONTO TOP 🚨",
+			"📢 DESCONTÃO INCRÍVELLLL!!! 😱👏🏻",
+			"📢 NO PRECINHOOOO 🚨"
+		]
+		self.BOTTOM_PHRASES = [
+			"⚠️ CORRE QUE O ESTOQUE É LIMITADO ⚠️",
+			"⚠️ TÁ SAINDO MUITO RÁPIDO ⚠️",
+			"⚠️ DESCONTO POR TEMPO LIMITADO ⚠️",
+			"⚠️ ÚLTIMAS UNIDADES ⚠️",
+			"⚠️ JÁ COM DESCONTO ⚠️",
+			"⚠️ NÃO FIQUE SEM O SEU ⚠️",
+			"⚠️ ÚLTIMA HORA DE DESCONTO ⚠️"
+		]
 
 		self.magalu_url = "https://www.magazinevoce.com.br/magazinecostasilvestre/"
 		self.magalu_login_url = "https://www.magazinevoce.com.br/magazinecostasilvestre/login/?next=/magazinecostasilvestre/"
 		self.product_details_url = "https://www.magazinevoce.com.br/magazinecostasilvestre/busca/"
 		self.magalu_product_id_pattern = re.compile(r"(Código: [a-z0-9]{9,10})")
+
 		options = ChromeOptions()
 		options.add_argument("-start-maximized")
+
 		self.driver = uc.Chrome(version_main=108, options=options)
 		self.initialize_session()
 
@@ -90,6 +110,7 @@ class MagaluAffiliateBot:
 			redirected = False
 			product_name = ""
 			product_image = ""
+			installments = ""
 
 			try:
 				product_details = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(
@@ -105,6 +126,7 @@ class MagaluAffiliateBot:
 				await asyncio.sleep(10)
 				# Getting personalized affiliate link
 				personalized_affiliate_link = ""
+
 				def get_affiliate_link():
 					try:
 						affiliate_link = self.driver.find_element(By.XPATH, '//*[@id="copy"]')
@@ -113,7 +135,6 @@ class MagaluAffiliateBot:
 						return affiliate_link
 					except selenium.common.exceptions.NoSuchElementException:
 						return None
-
 
 				while True:
 					personalized_affiliate_link = get_affiliate_link()
@@ -133,7 +154,7 @@ class MagaluAffiliateBot:
 				after_price = ""
 				discount = ""
 				try:
-					p_image = self.driver.find_element(By.CSS_SELECTOR,f"img[alt^='{product_name}']")
+					p_image = self.driver.find_element(By.CSS_SELECTOR, f"img[alt^='{product_name}']")
 					product_image = p_image.get_dom_attribute("src")
 				except:
 					pass
@@ -157,9 +178,15 @@ class MagaluAffiliateBot:
 				except:
 					pass
 
+				try:
+					installments_e = self.driver.find_element(By.CSS_SELECTOR,".info .p-installment span")
+					installments = installments_e.text.strip()
+				except:
+					pass
+
 				self.send_to_whatsapp(personalized_affiliate_link, product_image=product_image,
 				                      product_name=product_name, before_price=before_price, after_price=after_price,
-				                      discount=discount)
+				                      discount=discount,installments=installments)
 
 			else:
 				print("Not found")
@@ -175,17 +202,18 @@ class MagaluAffiliateBot:
 			return link
 
 	def send_to_whatsapp(self, personalized_affiliate_link, product_image, product_name, before_price, after_price,
-	                     discount) -> bool:
-		before_price_string = f"\n\nde ~{before_price}~" if before_price else ""
+	                     discount,installments) -> bool:
+		before_price_string = f"\n\nDE ~{before_price}~" if before_price else ""
 		discount_string = f'\n*{discount}*' if discount else ""
 
-		message = f"*📢 DESCONTÃO ROLANDO 🚨*" \
-		          f"\n*{product_name}*" \
+		message = f"*{random.choice(self.TOP_PHRASES)}*" \
+		          f"\n\n{product_name.upper()}\n" \
 		          f"{before_price_string}" \
-		          f"\n*🔥🔥 por {after_price}*" \
+		          f"\n*🔥🔥POR APENAS {after_price} à vista*" \
 		          f"{discount_string}" \
-		          f"\n\n*⚠️ CORRE QUE O ESTOQUE É LIMITADO ⚠️*" \
-		          f"\n```LINK DE COMPRA```" \
+				  f"\nou {installments}" \
+		          f"\n\n*{random.choice(self.BOTTOM_PHRASES)}*" \
+		          f"\n\n```LINK DE COMPRA```" \
 		          f"\n*🔗{personalized_affiliate_link}*" \
 		          f"\n*🔗{personalized_affiliate_link}*" \
 		          f"\n*🔗{personalized_affiliate_link}*\n"
