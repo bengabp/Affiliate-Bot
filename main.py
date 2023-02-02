@@ -204,19 +204,19 @@ class MagaluAffiliateBot:
 	def send_to_whatsapp(self, personalized_affiliate_link, product_image, product_name, before_price, after_price,
 	                     discount,installments) -> bool:
 		before_price_string = f"\n\nDE ~{before_price}~" if before_price else ""
-		discount_string = f'\n*{discount}*' if discount else ""
+		discount_string = f'\n*{discount.removeprefix("à vista").strip()}*' if discount else ""
 
 		message = f"*{random.choice(self.TOP_PHRASES)}*" \
 		          f"\n\n{product_name.upper()}\n" \
 		          f"{before_price_string}" \
-		          f"\n*🔥🔥POR APENAS {after_price} à vista*" \
+		          f"\n*🔥🔥 POR APENAS {after_price} à vista*" \
 		          f"{discount_string}" \
 				  f"\nou {installments}" \
 		          f"\n\n*{random.choice(self.BOTTOM_PHRASES)}*" \
 		          f"\n\n```LINK DE COMPRA```" \
-		          f"\n*🔗{personalized_affiliate_link}*" \
-		          f"\n*🔗{personalized_affiliate_link}*" \
-		          f"\n*🔗{personalized_affiliate_link}*\n"
+		          f"\n*🔗 {personalized_affiliate_link}*" \
+		          f"\n*🔗 {personalized_affiliate_link}*" \
+		          f"\n*🔗 {personalized_affiliate_link}*"
 
 		response = broadcast_product_to_magalu_whatsapp_group(product_image, message, self.magalu_affiliate_group_id)
 		print("Whatsapp Broadcast complete => ", response)
