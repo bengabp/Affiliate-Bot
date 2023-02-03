@@ -225,8 +225,8 @@ class MagaluAffiliateBot:
 
 if __name__ == "__main__":
 	with TelegramClient(PHONE_NUMBER, int(API_ID), API_HASH) as client:
-		MAGALU_TELEGRAM_GROUP_ID = os.environ["MAGALU_TELEGRAM_GROUP_ID"]
-		channel_entity = client.get_entity(MAGALU_TELEGRAM_GROUP_ID)
-		# channel_entity = PeerChannel(1217820058)
+		# MAGALU_TELEGRAM_GROUP_ID = os.environ["MAGALU_TELEGRAM_GROUP_ID"]
+		# channel_entity = client.get_entity(MAGALU_TELEGRAM_GROUP_ID)
+		channel_entity = PeerChannel(1217820058)
 		magaluAffiliateBot = MagaluAffiliateBot(client, channel_entity)
 		client.run_until_disconnected()
